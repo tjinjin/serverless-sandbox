@@ -1,0 +1,23 @@
+{
+  "name": "severless-sandbox",
+  "version": "1.0.0",
+  "description": "test",
+  "main": "index.js",
+  "dependencies": {
+    "serverless": "^1.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/tjinjin/severless-sandbox.git"
+  },
+  "author": "tjinjin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tjinjin/severless-sandbox/issues"
+  },
+  "homepage": "https://github.com/tjinjin/severless-sandbox#readme"
+}
