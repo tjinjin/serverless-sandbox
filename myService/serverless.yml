@@ -20,6 +20,7 @@ service: myService
 provider:
   name: aws
   runtime: nodejs4.3
+  region: ap-northeast-1
 
 # you can overwrite defaults here
 #  stage: dev
