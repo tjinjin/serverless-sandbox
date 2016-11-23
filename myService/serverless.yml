@@ -24,6 +24,14 @@ provider:
   apiKeys:
     - myFirstKey
     - ${env:MY_API_KEY}
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "ec2:*"
+      Resource:
+        Fn::Join:
+          - "arn:aws:ec2:*"
+          - - "*"
 
 # you can overwrite defaults here
 #  stage: dev
@@ -64,6 +72,8 @@ functions:
     - http:
         path: handler/hello
         method: post
+    environment:
+      instance: ${env:INSTANCE_ID}
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
