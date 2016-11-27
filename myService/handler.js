@@ -35,7 +35,7 @@ module.exports.hello = (event, context, callback) => {
   const findText = val => (val.match(/^text=(.*)$/));
   const text = event.body.split('&').filter(findText)[0];
   const decodeText = decodeURIComponent(text.split('=')[1]);
-  const subcommand = decodeText.match(/deploy\+(.*)$/)[1];
+  const subcommand = decodeText.match(/ec2-police\+(.*)$/)[1];
 
   if (subcommand == 'start') {
     ec2Start()
