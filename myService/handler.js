@@ -49,6 +49,16 @@ module.exports.hello = (event, context, callback) => {
                 console.log(response)
                 callback(null, response);
             })
+            .catch((error) => {
+              var response = {
+                  statusCode: 200,
+                  body: JSON.stringify({
+                    text: 'message: ' + error.message + ' code: ' +  error.code,
+                 }),
+              };
+              console.log(error)
+              callback(null, response);
+            });
     } else if (subcommand == 'stop') {
         ec2Stop()
             .then((response) => {
@@ -61,6 +71,16 @@ module.exports.hello = (event, context, callback) => {
                 console.log(response)
                 callback(null, response);
             })
+            .catch((error) => {
+              var response = {
+                  statusCode: 200,
+                  body: JSON.stringify({
+                    text: 'message: ' + error.message + ' code: ' +  error.code,
+                 }),
+              };
+              console.log(error)
+              callback(null, response);
+            });
     } else if (subcommand == 'status') {
         ec2Status()
             .then((response) => {
@@ -73,7 +93,16 @@ module.exports.hello = (event, context, callback) => {
                 console.log(response)
                 callback(null, response);
             })
-
+            .catch((error) => {
+              var response = {
+                  statusCode: 200,
+                  body: JSON.stringify({
+                    text: 'message: ' + error.message + ' code: ' +  error.code,
+                 }),
+              };
+              console.log(error)
+              callback(null, response);
+            });
     } else {
         var response = {
             statusCode: 200,
