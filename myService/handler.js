@@ -1,122 +1,86 @@
 'use strict';
 
-const INSTANCE_ID = process.env.instance
-
+if (typeof Promise === 'undefined') {
+    AWS.config.setPromisesDependency(require('bluebird'));
+}
 var AWS = require('aws-sdk');
 AWS.config.region = 'ap-northeast-1'
 
-function ec2Start(cb){
-  var ec2 = new AWS.EC2();
-  var params = {
-      InstanceIds: [
+const INSTANCE_ID = process.env.instance
+const params = {
+    InstanceIds: [
         INSTANCE_ID
-      ]
-  };
+    ]
+};
 
-  console.log('starting ec2');
+var response;
 
-  ec2.startInstances(params, function(err, data) {
-      if (!!err) {
-          console.log(err, err.stack);
-      } else {
-        cb();
-      }
-  });
+var ec2Start = function ec2Start() {
+    var ec2 = new AWS.EC2();
+    return ec2.startInstances(params).promise();
 }
 
-function ec2Stop(cb){
-  var ec2 = new AWS.EC2();
-  var params = {
-      InstanceIds: [
-        INSTANCE_ID
-      ]
-  };
-
-  console.log('stopping ec2');
-
-  ec2.stopInstances(params, function(err, data) {
-      if (!!err) {
-          console.log(err, err.stack);
-      } else {
-        cb();
-      }
-  });
+var ec2Stop = function ec2Stop() {
+    var ec2 = new AWS.EC2();
+    return ec2.stopInstances(params).promise();
 }
 
-function ec2Status(cb){
-  var ec2 = new AWS.EC2();
-  var params = {
-      InstanceIds: [
-        INSTANCE_ID
-      ]
-  };
-
-  console.log('status ec2');
-
-  ec2.describeInstances(params, function(err, data) {
-      if (!!err) {
-        console.log(err, err.stack);
-      } else {
-        cb();
-      }
-  });
+var ec2Status = function ec2Status() {
+    var ec2 = new AWS.EC2();
+    return ec2.describeInstances(params).promise();
 }
 
 module.exports.hello = (event, context, callback) => {
-  // リクエストをparseする
-  // deploy
-  const findText = val => (val.match(/^text=(.*)$/));
-  const text = event.body.split('&').filter(findText)[0];
-  const decodeText = decodeURIComponent(text.split('=')[1]);
-  const subcommand = decodeText.match(/deploy\+(.*)$/)[1];
+    // deploy stop
+    const findText = val => (val.match(/^text=(.*)$/));
+    const text = event.body.split('&').filter(findText)[0];
+    const decodeText = decodeURIComponent(text.split('=')[1]);
+    const subcommand = decodeText.match(/deploy\+(.*)$/)[1];
 
-  console.log(subcommand)
-  if (subcommand == 'start') {
-    ec2Start(function() {
-      console.log('start')
-    });
-    var response = {
-      statusCode: 200,
-      body: JSON.stringify({
-        text: 'start',
-        input: event,
-      }),
-    };
-  } else if (subcommand == 'stop') {
-    ec2Stop(function() {
-      console.log('stop')
-    });
-    var response = {
-      statusCode: 200,
-      body: JSON.stringify({
-        text: 'stop',
-        input: event,
-      }),
-    };
-  } else if (subcommand == 'status') {
-    ec2Status(function() {
-      console.log('status')
-    });
-    var response = {
-      statusCode: 200,
-      body: JSON.stringify({
-        text: 'status',
-        input: event,
-      }),
-    };
-  } else {
-    // 何もしない
-    var response = {
-      statusCode: 500,
-      body: JSON.stringify({
-        text: 'this command is not implemeted',
-        input: event,
-      }),
-    };
-  }
+    if (subcommand == 'start') {
+        ec2Start()
+            .then((response) => {
+                var response = {
+                    statusCode: 200,
+                    body: JSON.stringify({
+                        text: response.StatingInstances[0].CUrrentState.pending,
+                    }),
+                };
+                console.log(response)
+                callback(null, response);
+            })
+    } else if (subcommand == 'stop') {
+        ec2Stop()
+            .then((response) => {
+                var response = {
+                    statusCode: 200,
+                    body: JSON.stringify({
+                        text: response.StoppingInstances[0].CurrentState.Name,
+                    }),
+                };
+                console.log(response)
+                callback(null, response);
+            })
+    } else if (subcommand == 'status') {
+        ec2Status()
+            .then((response) => {
+                var response = {
+                    statusCode: 200,
+                    body: JSON.stringify({
+                        text: 'CurrentStatus: ' + response.Reservations[0].Instances[0].State.Name,
+                    }),
+                };
+                console.log(response)
+                callback(null, response);
+            })
 
-  callback(null, response);
-
-  // Use this code if you don't use the http event with the LAMBDA-PROXY integration
-  // callback(null, { message: 'Go Serverless v1.0! Your function executed successfully!', event });
+    } else {
+        var response = {
+            statusCode: 200,
+            body: JSON.stringify({
+                text: "usage: <bot_name> <subcommand>.\nstart/stop/status",
+            }),
+        };
+        callback(null, response)
+    }
 };
