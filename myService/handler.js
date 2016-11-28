@@ -14,22 +14,8 @@ const params = {
   ]
 };
 
+var ec2 = new AWS.EC2();
 var response;
-
-var ec2Start = function ec2Start() {
-  var ec2 = new AWS.EC2();
-  return ec2.startInstances(params).promise();
-}
-
-var ec2Stop = function ec2Stop() {
-  var ec2 = new AWS.EC2();
-  return ec2.stopInstances(params).promise();
-}
-
-var ec2Status = function ec2Status() {
-  var ec2 = new AWS.EC2();
-  return ec2.describeInstances(params).promise();
-}
 
 var createResponse = (text) => {
   var response = {
@@ -50,7 +36,7 @@ module.exports.hello = (event, context, callback) => {
   const subcommand = decodeText.match(reg)[1];
 
   if (subcommand == 'start') {
-    ec2Start()
+    ec2.startInstances(params).promise()
       .then((response) => {
         response = createResponse(JSON.stringify(response))
         console.log(response)
@@ -62,7 +48,7 @@ module.exports.hello = (event, context, callback) => {
         callback(null, response);
       });
   } else if (subcommand == 'stop') {
-    ec2Stop()
+    ec2.stopInstances(params).promise()
       .then((response) => {
         response = createResponse(JSON.stringify(response))
         console.log(response)
@@ -74,7 +60,7 @@ module.exports.hello = (event, context, callback) => {
         callback(null, response);
       });
   } else if (subcommand == 'status') {
-    ec2Status()
+    ec2.describeInstances(params).promise()
       .then((response) => {
         response = createResponse(JSON.stringify(response))
         console.log(response)
