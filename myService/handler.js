@@ -28,7 +28,7 @@ var createResponse = (text) => {
 }
 
 module.exports.hello = (event, context, callback) => {
-  // deploy stop
+  // parse event
   const findText = val => (val.match(/^text=(.*)$/));
   const text = event.body.split('&').filter(findText)[0];
   const decodeText = decodeURIComponent(text.split('=')[1]);
