@@ -6,6 +6,7 @@ if (typeof Promise === 'undefined') {
 var AWS = require('aws-sdk');
 AWS.config.region = 'ap-northeast-1'
 
+const BOT_NAME= process.env.bot_name
 const INSTANCE_ID = process.env.instance
 const params = {
   InstanceIds: [
@@ -45,7 +46,8 @@ module.exports.hello = (event, context, callback) => {
   const findText = val => (val.match(/^text=(.*)$/));
   const text = event.body.split('&').filter(findText)[0];
   const decodeText = decodeURIComponent(text.split('=')[1]);
-  const subcommand = decodeText.match(/ec2-police\+(.*)$/)[1];
+  const reg = new RegExp('^' + BOT_NAME + '\\+(.*)$')
+  const subcommand = decodeText.match(reg)[1];
 
   if (subcommand == 'start') {
     ec2Start()
