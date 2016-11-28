@@ -30,6 +30,16 @@ var ec2Status = function ec2Status() {
   return ec2.describeInstances(params).promise();
 }
 
+var createResponse = (text) => {
+  var response = {
+    statusCode: 200,
+    body: JSON.stringify({
+      text: text,
+    }),
+  };
+  return response
+}
+
 module.exports.hello = (event, context, callback) => {
   // deploy stop
   const findText = val => (val.match(/^text=(.*)$/));
@@ -40,76 +50,42 @@ module.exports.hello = (event, context, callback) => {
   if (subcommand == 'start') {
     ec2Start()
       .then((response) => {
-        var response = {
-          statusCode: 200,
-          body: JSON.stringify({
-            text: response.StatingInstances[0].CUrrentState.pending,
-          }),
-        };
+        response = createResponse(JSON.stringify(response))
         console.log(response)
         callback(null, response);
       })
       .catch((error) => {
-        var response = {
-          statusCode: 200,
-          body: JSON.stringify({
-            text: 'message: ' + error.message + ' code: ' + error.code,
-          }),
-        };
+        response = createResponse(JSON.stringify(error))
         console.log(error)
         callback(null, response);
       });
   } else if (subcommand == 'stop') {
     ec2Stop()
       .then((response) => {
-        var response = {
-          statusCode: 200,
-          body: JSON.stringify({
-            text: response.StoppingInstances[0].CurrentState.Name,
-          }),
-        };
+        response = createResponse(JSON.stringify(response))
         console.log(response)
         callback(null, response);
       })
       .catch((error) => {
-        var response = {
-          statusCode: 200,
-          body: JSON.stringify({
-            text: 'message: ' + error.message + ' code: ' + error.code,
-          }),
-        };
+        response = createResponse(JSON.stringify(error))
         console.log(error)
         callback(null, response);
       });
   } else if (subcommand == 'status') {
     ec2Status()
       .then((response) => {
-        var response = {
-          statusCode: 200,
-          body: JSON.stringify({
-            text: 'CurrentStatus: ' + response.Reservations[0].Instances[0].State.Name,
-          }),
-        };
+        response = createResponse(JSON.stringify(response))
         console.log(response)
         callback(null, response);
       })
       .catch((error) => {
-        var response = {
-          statusCode: 200,
-          body: JSON.stringify({
-            text: 'message: ' + error.message + ' code: ' + error.code,
-          }),
-        };
+        response = createResponse(JSON.stringify(error))
         console.log(error)
         callback(null, response);
       });
   } else {
-    var response = {
-      statusCode: 200,
-      body: JSON.stringify({
-        text: "usage: <bot_name> <subcommand>.\nstart/stop/status",
-      }),
-    };
-    callback(null, response)
+        response = createResponse("usage: <bot_name> <subcommand>.\nstart/stop/status")
+        console.log(response)
+        callback(null, response);
   }
 };
