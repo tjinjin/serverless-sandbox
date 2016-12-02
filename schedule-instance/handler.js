@@ -1,16 +1,37 @@
 'use strict';
 
-module.exports.hello = (event, context, callback) => {
-  const response = {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: 'Go Serverless v1.0! Your function executed successfully!',
-      input: event,
-    }),
-  };
+var AWS = require('aws-sdk');
+AWS.config.region = 'ap-northeast-1';
 
-  callback(null, response);
+var ec2 = new AWS.EC2();
 
-  // Use this code if you don't use the http event with the LAMBDA-PROXY integration
-  // callback(null, { message: 'Go Serverless v1.0! Your function executed successfully!', event });
+const INSTANCE_ID = process.env.instance
+const params = {
+  InstanceIds: [
+    INSTANCE_ID
+  ]
+};
+
+module.exports.ec2Start = (event, context, callback) => {
+  console.log('start')
+  ec2.startInstances(params).promise()
+    .then((response) => {
+      callback(null, response);
+    })
+    .catch((error) => {
+      console.log(error)
+      callback(null, error);
+    });
+};
+
+module.exports.ec2Stop = (event, context, callback) => {
+  console.log('stop')
+  ec2.stopInstances(params).promise()
+    .then((response) => {
+      callback(null, response);
+    })
+    .catch((error) => {
+      console.log(error)
+      callback(null, error);
+    });
 };

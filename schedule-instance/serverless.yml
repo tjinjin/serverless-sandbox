@@ -20,6 +20,15 @@ service: schedule-instance
 provider:
   name: aws
   runtime: nodejs4.3
+  region: ap-northeast-1
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "ec2:*"
+      Resource:
+        Fn::Join:
+          - "arn:aws:ec2:*"
+          - - "*"
 
 # you can overwrite defaults here
 #  stage: dev
@@ -54,8 +63,19 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-  hello:
-    handler: handler.hello
+  ec2Start:
+    handler: handler.ec2Start
+    events:
+      - schedule: cron(0 01 ? * MON-FRI *)
+    environment:
+      instance: ${env:INSTANCE_ID}
+  ec2Stop:
+    handler: handler.ec2Stop
+    events:
+      - schedule: cron(0 10 ? * MON-FRI *)
+    environment:
+      instance: ${env:INSTANCE_ID}
+
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
