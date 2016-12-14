@@ -74,6 +74,7 @@ functions:
         method: post
     environment:
       instance: ${env:INSTANCE_ID}
+      bot_name: ${env:BOT_NAME}
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

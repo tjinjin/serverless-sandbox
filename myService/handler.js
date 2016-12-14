@@ -6,6 +6,7 @@ if (typeof Promise === 'undefined') {
 var AWS = require('aws-sdk');
 AWS.config.region = 'ap-northeast-1'
 
+const BOT_NAME= process.env.bot_name
 const INSTANCE_ID = process.env.instance
 const params = {
   InstanceIds: [
@@ -13,103 +14,66 @@ const params = {
   ]
 };
 
+var ec2 = new AWS.EC2();
 var response;
 
-var ec2Start = function ec2Start() {
-  var ec2 = new AWS.EC2();
-  return ec2.startInstances(params).promise();
-}
-
-var ec2Stop = function ec2Stop() {
-  var ec2 = new AWS.EC2();
-  return ec2.stopInstances(params).promise();
-}
-
-var ec2Status = function ec2Status() {
-  var ec2 = new AWS.EC2();
-  return ec2.describeInstances(params).promise();
+var createResponse = (text) => {
+  var response = {
+    statusCode: 200,
+    body: JSON.stringify({
+      text: text,
+    }),
+  };
+  return response
 }
 
 module.exports.hello = (event, context, callback) => {
-  // deploy stop
+  // parse event
   const findText = val => (val.match(/^text=(.*)$/));
   const text = event.body.split('&').filter(findText)[0];
   const decodeText = decodeURIComponent(text.split('=')[1]);
-  const subcommand = decodeText.match(/ec2-police\+(.*)$/)[1];
+  const reg = new RegExp('^' + BOT_NAME + '\\+(.*)$')
+  const subcommand = decodeText.match(reg)[1];
 
   if (subcommand == 'start') {
-    ec2Start()
+    ec2.startInstances(params).promise()
       .then((response) => {
-        var response = {
-          statusCode: 200,
-          body: JSON.stringify({
-            text: response.StatingInstances[0].CUrrentState.pending,
-          }),
-        };
+        response = createResponse(JSON.stringify(response))
         console.log(response)
         callback(null, response);
       })
       .catch((error) => {
-        var response = {
-          statusCode: 200,
-          body: JSON.stringify({
-            text: 'message: ' + error.message + ' code: ' + error.code,
-          }),
-        };
+        response = createResponse(JSON.stringify(error))
         console.log(error)
         callback(null, response);
       });
   } else if (subcommand == 'stop') {
-    ec2Stop()
+    ec2.stopInstances(params).promise()
       .then((response) => {
-        var response = {
-          statusCode: 200,
-          body: JSON.stringify({
-            text: response.StoppingInstances[0].CurrentState.Name,
-          }),
-        };
+        response = createResponse(JSON.stringify(response))
         console.log(response)
         callback(null, response);
       })
       .catch((error) => {
-        var response = {
-          statusCode: 200,
-          body: JSON.stringify({
-            text: 'message: ' + error.message + ' code: ' + error.code,
-          }),
-        };
+        response = createResponse(JSON.stringify(error))
         console.log(error)
         callback(null, response);
       });
   } else if (subcommand == 'status') {
-    ec2Status()
+    ec2.describeInstances(params).promise()
       .then((response) => {
-        var response = {
-          statusCode: 200,
-          body: JSON.stringify({
-            text: 'CurrentStatus: ' + response.Reservations[0].Instances[0].State.Name,
-          }),
-        };
+        response = createResponse(JSON.stringify(response))
         console.log(response)
         callback(null, response);
       })
       .catch((error) => {
-        var response = {
-          statusCode: 200,
-          body: JSON.stringify({
-            text: 'message: ' + error.message + ' code: ' + error.code,
-          }),
-        };
+        response = createResponse(JSON.stringify(error))
         console.log(error)
         callback(null, response);
       });
   } else {
-    var response = {
-      statusCode: 200,
-      body: JSON.stringify({
-        text: "usage: <bot_name> <subcommand>.\nstart/stop/status",
-      }),
-    };
-    callback(null, response)
+        response = createResponse("usage: <bot_name> <subcommand>.\nstart/stop/status")
+        console.log(response)
+        callback(null, response);
   }
 };
